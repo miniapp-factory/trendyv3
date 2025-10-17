@@ -8,36 +8,37 @@ export interface MiniAppContext {
   sdk: MiniAppSDK;
   context: Context.MiniAppContext | undefined;
   isInMiniApp: boolean | undefined;
+  walletAddress: string | null;
+  connectWallet: () => Promise<void>;
+  disconnectWallet: () => void;
 }
 const defaultSettings: MiniAppContext = {
   sdk,
   context: undefined,
   isInMiniApp: undefined,
+  walletAddress: null,
+  connectWallet: async () => {},
+  disconnectWallet: () => {},
 };
 const MiniAppContext = createContext<MiniAppContext>(defaultSettings);
 
 export function MiniAppProvider({ children }: { children: React.ReactNode }) {
-  const [context, setContext] = useState<MiniAppContext>(defaultSettings);
+  const [state, setState] = useState<MiniAppContext>(defaultSettings);
 
   useEffect(() => {
     const ready = async () => {
       await Promise.all([
         sdk.context
           .then((context) =>
-            setContext((oldContext) => {
-              return { ...oldContext, context };
-            })
+            setState((old) => ({ ...old, context }))
           )
           .catch(console.error),
         sdk
           .isInMiniApp()
           .then((isInMiniApp) =>
-            setContext((oldContext) => {
-              return { ...oldContext, isInMiniApp };
-            })
+            setState((old) => ({ ...old, isInMiniApp }))
           )
           .catch(console.error),
-        ,
       ]);
 
       await sdk.actions.ready().catch(console.error);
@@ -46,8 +47,21 @@ export function MiniAppProvider({ children }: { children: React.ReactNode }) {
     ready();
   }, []);
 
+  const connectWallet = async () => {
+    try {
+      const address = await sdk.actions.requestWallet();
+      setState((old) => ({ ...old, walletAddress: address }));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const disconnectWallet = () => {
+    setState((old) => ({ ...old, walletAddress: null }));
+  };
+
   return (
-    <MiniAppContext.Provider value={context}>
+    <MiniAppContext.Provider value={{ ...state, connectWallet, disconnectWallet }}>
       {children}
     </MiniAppContext.Provider>
   );

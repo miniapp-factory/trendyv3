@@ -15,21 +15,11 @@ import {
 import { title } from "@/lib/metadata";
 
 const pages = [
-  {
-    label: (
-      <div className="flex place-items-center gap-2">
-        <img
-          className="size-[40px]"
-          src="/icon.png"
-          alt="icon"
-          width={40}
-          height={40}
-        />
-        <span className="text-xl">{title}</span>
-      </div>
-    ),
-    href: "/",
-  },
+  { label: <span className="text-xl font-bold">{title}</span>, href: "/" },
+  { label: "Feed", href: "/feed" },
+  { label: "Upload", href: "/upload" },
+  { label: "Creator Dashboard", href: "/(dashboard)/creator" },
+  { label: "Admin Dashboard", href: "/(dashboard)/admin" },
 ];
 
 export function Header() {
@@ -43,7 +33,7 @@ export function Header() {
         ))}
       </header>
       <header className="sticky flex place-content-between border-b p-4 md:hidden">
-        <Link href="/">{pages.find((page) => page.href === "/")?.label}</Link>
+        <Link href="/">{pages.find((p) => p.href === "/")?.label}</Link>
         {pages.length > 1 && (
           <Drawer>
             <DrawerTrigger>
@@ -56,20 +46,11 @@ export function Header() {
               </DrawerHeader>
               <DrawerFooter>
                 <div className="flex flex-col place-content-center gap-4">
-                  {pages
-                    .map((page) =>
-                      page.href === "/"
-                        ? {
-                            ...page,
-                            label: <span className="text-lg">Home</span>,
-                          }
-                        : page
-                    )
-                    .map((page, i) => (
-                      <DrawerClose key={i}>
-                        <Link href={page.href}>{page.label}</Link>
-                      </DrawerClose>
-                    ))}
+                  {pages.map((page, i) => (
+                    <DrawerClose key={i}>
+                      <Link href={page.href}>{page.label}</Link>
+                    </DrawerClose>
+                  ))}
                 </div>
               </DrawerFooter>
             </DrawerContent>
